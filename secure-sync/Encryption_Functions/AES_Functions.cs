@@ -11,10 +11,6 @@ namespace SecureSync
     {
         private Secure security;
 
-
-
-
-
         public Boolean Get_Security(string path_to_password)
         {
             try

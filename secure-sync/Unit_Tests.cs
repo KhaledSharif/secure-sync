@@ -9,6 +9,16 @@ namespace SecureSync
     class Unit_Tests
     {
 
+        public Unit_Tests()
+        {
+            Test_File_Encryption();
+        }
+
+        private void Test_HTTP_Server()
+        {
+
+        }
+
         private void Test_File_Encryption()
         {
             RSA_Functions rsa_class = new RSA_Functions();
