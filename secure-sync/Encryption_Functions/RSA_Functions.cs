@@ -1,166 +1,156 @@
 ﻿using System;
-using System.IO;
-using System.Security;
-using System.Security.Cryptography;
 using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
 
-using SecureSync;
-
-namespace SecureSync
+namespace secure_sync.Encryption_Functions
 {
-    class RSA_Functions
+    class RsaFunctions
     {
-        private RSACryptoServiceProvider rsa_service_provider;
-        private RSAParameters public_rsa_key, private_rsa_key;
-        private Encryption encryptions_class;
+        private RSACryptoServiceProvider _rsaServiceProvider;
+        private RSAParameters _publicRsaKey, _privateRsaKey;
+        private Encryption _encryptionsClass;
 
-        public Boolean Open_RSA_Keys(string path_to_public_key, string path_to_private_key)
+        public Boolean OpenRsaKeys(string pathToPublicKey, string pathToPrivateKey)
         {
-            if (File.Exists(path_to_private_key))
+            if (File.Exists(pathToPrivateKey))
             {
                 try
                 {
-                    rsa_service_provider = new RSACryptoServiceProvider();
-                    rsa_service_provider.ImportCspBlob(File.ReadAllBytes(path_to_private_key));
-                    if (!File.Exists(path_to_public_key))
-                        File.WriteAllBytes(path_to_public_key, rsa_service_provider.ExportCspBlob(false));
+                    _rsaServiceProvider = new RSACryptoServiceProvider();
+                    _rsaServiceProvider.ImportCspBlob(File.ReadAllBytes(pathToPrivateKey));
+                    if (!File.Exists(pathToPublicKey))
+                        File.WriteAllBytes(pathToPublicKey, _rsaServiceProvider.ExportCspBlob(false));
                 }
                 catch (Exception e)
                 {
-                    return Throw_Exceptions.Throw_Exception_Error("Failed to open already existing RSA keys.", e);
+                    return ThrowExceptions.ThrowExceptionError("Failed to open already existing RSA keys.", e);
                 }
             }
             else
             {
                 try
                 {
-                    rsa_service_provider = new RSACryptoServiceProvider(4096);
-                    File.WriteAllBytes(path_to_private_key, rsa_service_provider.ExportCspBlob(true));
-                    File.WriteAllBytes(path_to_public_key, rsa_service_provider.ExportCspBlob(false));
+                    _rsaServiceProvider = new RSACryptoServiceProvider(4096);
+                    File.WriteAllBytes(pathToPrivateKey, _rsaServiceProvider.ExportCspBlob(true));
+                    File.WriteAllBytes(pathToPublicKey, _rsaServiceProvider.ExportCspBlob(false));
                 }
                 catch (Exception e)
                 {
-                    return Throw_Exceptions.Throw_Exception_Error("Failed to create new RSA keys due to absence of saved keys.", e);
+                    return ThrowExceptions.ThrowExceptionError("Failed to create new RSA keys due to absence of saved keys.", e);
                 }
             }
             try
             {
-                public_rsa_key = rsa_service_provider.ExportParameters(false);
-                private_rsa_key = rsa_service_provider.ExportParameters(true);
+                _publicRsaKey = _rsaServiceProvider.ExportParameters(false);
+                _privateRsaKey = _rsaServiceProvider.ExportParameters(true);
                 return true;
             }
             catch (Exception e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Failed to set public and private RSA keys in memory.", e);
+                return ThrowExceptions.ThrowExceptionError("Failed to set public and private RSA keys in memory.", e);
             }
         }
 
-        public Boolean Save_Random_Password(string path_to_password, int length_of_password)
+        public Boolean SaveRandomPassword(string pathToPassword, int lengthOfPassword)
         {
-            RNGCryptoServiceProvider random_password = new RNGCryptoServiceProvider();
-            byte[] random_password_bytes = new byte[length_of_password];
+            var randomPassword = new RNGCryptoServiceProvider();
+            var randomPasswordBytes = new byte[lengthOfPassword];
             try
             {
-                using (StreamWriter stream_writer = new StreamWriter(@"C:\Users\home\Documents\password.txt", false))
+                using (var streamWriter = new StreamWriter(@"C:\Users\home\Documents\password.txt", false))
                 {
                     try
                     {
-                        random_password.GetBytes(random_password_bytes);
-                        stream_writer.Write(Convert.ToBase64String(random_password_bytes, 0, random_password_bytes.Length));
+                        randomPassword.GetBytes(randomPasswordBytes);
+                        streamWriter.Write(Convert.ToBase64String(randomPasswordBytes, 0, randomPasswordBytes.Length));
                         return true;
                     }
                     catch (NotSupportedException e)
                     {
-                        return Throw_Exceptions.Throw_Exception_Error("Failed to write password to an invalid format or path-name.", e);
+                        return ThrowExceptions.ThrowExceptionError("Failed to write password to an invalid format or path-name.", e);
                     }
                     catch (Exception e)
                     {
-                        return Throw_Exceptions.Throw_Exception_Error("Failed to generate and/or save a random password.", e);
+                        return ThrowExceptions.ThrowExceptionError("Failed to generate and/or save a random password.", e);
                     }
                     finally
                     {
-                        random_password.Dispose();
-                        random_password_bytes = null;
+                        randomPassword.Dispose();
+                        randomPasswordBytes = null;
                     }
                 }
             }
             catch (UnauthorizedAccessException e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("You do not have authorization to save a password in the specified path.", e);
+                return ThrowExceptions.ThrowExceptionError("You do not have authorization to save a password in the specified path.", e);
             }
             catch (ArgumentNullException e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Trying to generate and/or save a password resulting in an Argument Null exception.", e);
+                return ThrowExceptions.ThrowExceptionError("Trying to generate and/or save a password resulting in an Argument Null exception.", e);
             }
             catch (DirectoryNotFoundException e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("The specified path to save the password is invalid.", e);
+                return ThrowExceptions.ThrowExceptionError("The specified path to save the password is invalid.", e);
             }
             catch (Exception e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Failed to generate and/or save a random password for an unknown reason.", e);
+                return ThrowExceptions.ThrowExceptionError("Failed to generate and/or save a random password for an unknown reason.", e);
             }
         }
 
-        public Boolean Encrypt_And_Save_Password(string path_to_password, string path_to_encryption, int size_of_buffer)
+        public Boolean EncryptAndSavePassword(string pathToPassword, string pathToEncryption, int sizeOfBuffer)
         {
             try
             {
-                encryptions_class = new Encryption();
-                StreamReader stream_reader = new StreamReader(path_to_password, true);
-                byte[] buffer = new byte[size_of_buffer];
-                byte[] encrypted_buffer;
-                List<byte> encrypted_file_list = new List<byte>();
+                _encryptionsClass = new Encryption();
+                var streamReader = new StreamReader(pathToPassword, true);
+                var buffer = new byte[sizeOfBuffer];
+                var encryptedFileList = new List<byte>();
 
-                while (stream_reader.BaseStream.Read(buffer, 0, buffer.Length) > 0)
+                while (streamReader.BaseStream.Read(buffer, 0, buffer.Length) > 0)
                 {
-                    if (buffer != null)
-                    {
-                        encrypted_buffer = encryptions_class.EncryptFile(public_rsa_key, buffer);
-                        for (int i = 0; i < encrypted_buffer.Length; i++) encrypted_file_list.Add(encrypted_buffer[i]);
-                    }
-                    else { throw new IOException("Buffer was null!"); }
+                    var encryptedBuffer = _encryptionsClass.EncryptFile(_publicRsaKey, buffer);
+                    encryptedFileList.AddRange(encryptedBuffer);
                 }
-                stream_reader.Close();
-                File.WriteAllBytes(path_to_encryption, encrypted_file_list.ToArray());
+                streamReader.Close();
+                File.WriteAllBytes(pathToEncryption, encryptedFileList.ToArray());
                 return true;
             }
             catch (Exception e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Failed to encrypt and save the already existing password file.", e);
+                return ThrowExceptions.ThrowExceptionError("Failed to encrypt and save the already existing password file.", e);
             }
         }
 
-        public Boolean Decrypt_Password_File(string path_to_encryption, string path_to_password, int size_of_buffer)
+        public Boolean DecryptPasswordFile(string pathToEncryption, string pathToPassword, int sizeOfBuffer)
         {
             try
             {
-                StreamReader stream_reader = new StreamReader(path_to_encryption);
-
-                byte[] buffer = new byte[size_of_buffer], decrypted_buffer;
-                List<byte> decrypted_file_list = new List<byte>();
-
-                while (stream_reader.BaseStream.Read(buffer, 0, buffer.Length) > 0)
+                List<byte> decryptedFileList;
+                using (var streamReader = new StreamReader(pathToEncryption))
                 {
-                    if (buffer != null)
-                    {
-                        decrypted_buffer = encryptions_class.DecryptFile(private_rsa_key, buffer);
-                        for (int i = 0; i < decrypted_buffer.Length; i++) decrypted_file_list.Add(decrypted_buffer[i]);
-                    }
-                    else { throw new IOException("Buffer was null!"); }
-                }
-                stream_reader.Close();
-                File.WriteAllBytes(path_to_password, decrypted_file_list.ToArray());
+                    var buffer = new byte[sizeOfBuffer];
+                    decryptedFileList = new List<byte>();
 
+                    while (streamReader.BaseStream.Read(buffer, 0, buffer.Length) > 0)
+                    {
+                        var decryptedBuffer = _encryptionsClass.DecryptFile(_privateRsaKey, buffer);
+                        if (decryptedBuffer == null) throw new Exception("The decryptedBuffer variable was found to be null.");
+                        decryptedFileList.AddRange(decryptedBuffer);
+                    }
+                    streamReader.Close();
+                }
+                File.WriteAllBytes(pathToPassword, decryptedFileList.ToArray());
                 return true;
             }
             catch (ArgumentNullException e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Reading the password file resulted in an Argument Null Exception.", e);
+                return ThrowExceptions.ThrowExceptionError("Reading the password file resulted in an Argument Null Exception.", e);
             }
             catch (Exception e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Cannot decrypt the encrypted password file.", e);
+                return ThrowExceptions.ThrowExceptionError("Cannot decrypt the encrypted password file.", e);
             }
         }
     }

@@ -1,27 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
-using System.Security;
 using System.Security.Cryptography;
-using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
 
-
-namespace SecureSync
+namespace secure_sync
 {
     class Encryption
     {
-        private byte[] RSAEncrypt(
-            byte[] DataToEncrypt, RSAParameters RSAKeyInfo, bool DoOAEPPadding)
+        private static byte[] RsaEncrypt(byte[] dataToEncrypt, RSAParameters rsaKeyInfo, bool doOaepPadding)
         {
             try
             {
-                RSACryptoServiceProvider RSAalg = new RSACryptoServiceProvider();
-                RSAalg.ImportParameters(RSAKeyInfo);
-                return RSAalg.Encrypt(DataToEncrypt, DoOAEPPadding);
+                var rsAalg = new RSACryptoServiceProvider();
+                rsAalg.ImportParameters(rsaKeyInfo);
+                return rsAalg.Encrypt(dataToEncrypt, doOaepPadding);
             }
             catch (CryptographicException e)
             {
@@ -30,14 +20,13 @@ namespace SecureSync
             }
         }
 
-        private byte[] RSADecrypt(
-            byte[] DataToDecrypt, RSAParameters RSAKeyInfo, bool DoOAEPPadding)
+        private static byte[] RsaDecrypt(byte[] dataToDecrypt, RSAParameters rsaKeyInfo, bool doOaepPadding)
         {
             try
             {
-                RSACryptoServiceProvider RSAalg = new RSACryptoServiceProvider();
-                RSAalg.ImportParameters(RSAKeyInfo);
-                return RSAalg.Decrypt(DataToDecrypt, DoOAEPPadding);
+                var rsAalg = new RSACryptoServiceProvider();
+                rsAalg.ImportParameters(rsaKeyInfo);
+                return rsAalg.Decrypt(dataToDecrypt, doOaepPadding);
             }
             catch (CryptographicException e)
             {
@@ -46,14 +35,12 @@ namespace SecureSync
             }
         }
 
-        public byte[] EncryptFile(
-            RSAParameters rsa_public_key, byte[] file_to_be_encrypted)
+        public byte[] EncryptFile(RSAParameters rsaPublicKey, byte[] fileToBeEncrypted)
         {
-            byte[] encrypted_file;
             try
             {
-                encrypted_file = RSAEncrypt(file_to_be_encrypted, rsa_public_key, false);
-                return encrypted_file;
+                var encryptedFile = RsaEncrypt(fileToBeEncrypted, rsaPublicKey, false);
+                return encryptedFile;
             }
             catch
             {
@@ -62,14 +49,12 @@ namespace SecureSync
             }
         }
 
-        public byte[] DecryptFile(
-            RSAParameters rsa_private_key, byte[] file_to_be_decrypted)
+        public byte[] DecryptFile(RSAParameters rsaPrivateKey, byte[] fileToBeDecrypted)
         {
-            byte[] decrypted_file;
             try
             {
-                decrypted_file = RSADecrypt(file_to_be_decrypted, rsa_private_key, false);
-                return decrypted_file;
+                var decryptedFile = RsaDecrypt(fileToBeDecrypted, rsaPrivateKey, false);
+                return decryptedFile;
             }
             catch
             {

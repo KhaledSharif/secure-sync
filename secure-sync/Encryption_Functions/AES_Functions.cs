@@ -1,9 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Security;
-using System.Security.Cryptography;
-
-using SecureSync;
+using secure_sync;
 
 namespace SecureSync
 {
@@ -15,19 +12,19 @@ namespace SecureSync
         {
             try
             {
-                byte[] read_key = File.ReadAllBytes(path_to_password);
-                byte[] read_key_sub_array = new byte[32];
+                var read_key = File.ReadAllBytes(path_to_password);
+                var read_key_sub_array = new byte[32];
                 Buffer.BlockCopy(read_key, 0, read_key_sub_array, 0, 32);
                 security = new Secure(read_key_sub_array);
                 return true;
             }
             catch (FileNotFoundException e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("You provided an invalid path to the password file.", e);
+                return ThrowExceptions.ThrowExceptionError("You provided an invalid path to the password file.", e);
             }
             catch (Exception e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Failed to fetch some or all of the securities.", e);
+                return ThrowExceptions.ThrowExceptionError("Failed to fetch some or all of the securities.", e);
             }
         }
 
@@ -40,11 +37,11 @@ namespace SecureSync
             }
             catch (DirectoryNotFoundException e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("The path for the file to be encrypted and/or saved was incorrect.", e);
+                return ThrowExceptions.ThrowExceptionError("The path for the file to be encrypted and/or saved was incorrect.", e);
             }
             catch (Exception e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Failed to encrypt the file with securities.", e);
+                return ThrowExceptions.ThrowExceptionError("Failed to encrypt the file with securities.", e);
             }
         }
 
@@ -57,11 +54,11 @@ namespace SecureSync
             }
             catch (DirectoryNotFoundException e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("The path for the file to be decrypted and/or saved was incorrect.", e);
+                return ThrowExceptions.ThrowExceptionError("The path for the file to be decrypted and/or saved was incorrect.", e);
             }
             catch (Exception e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("Failed to decrypt or to write the decrypted file to disk.", e);
+                return ThrowExceptions.ThrowExceptionError("Failed to decrypt or to write the decrypted file to disk.", e);
             }
         }
 

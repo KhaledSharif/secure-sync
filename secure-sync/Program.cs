@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Net;
-using System.Diagnostics;
+using secure_sync.Server_Classes;
 
-using SecureSync;
-
-namespace Program
+namespace secure_sync
 {
     class Program
     {
@@ -17,7 +15,7 @@ namespace Program
         {
             try
             {
-                Windows_HTTP_Server ws = new Windows_HTTP_Server(SendResponse, @"http://localhost:8080/test/");
+                var ws = new WindowsHttpServer(SendResponse, @"http://localhost:8080/test/");
                 ws.Run();
                 Console.WriteLine("A simple webserver. Press a key to quit.");
                 Console.ReadKey();
@@ -25,7 +23,7 @@ namespace Program
             }
             catch (Exception e)
             {
-                Throw_Exceptions.Throw_Exception_Error("", e);
+                ThrowExceptions.ThrowExceptionError("", e);
             }
         }
     }

@@ -1,9 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
 
 namespace SecureSync
@@ -37,12 +33,12 @@ namespace SecureSync
 
         private byte[] Transform(byte[] input, ICryptoTransform CryptoTransform)
         {
-            MemoryStream memStream = new MemoryStream();
-            CryptoStream cryptStream = new CryptoStream(memStream, CryptoTransform, CryptoStreamMode.Write);
+            var memStream = new MemoryStream();
+            var cryptStream = new CryptoStream(memStream, CryptoTransform, CryptoStreamMode.Write);
             cryptStream.Write(input, 0, input.Length);
             cryptStream.FlushFinalBlock();
             memStream.Position = 0;
-            byte[] result = memStream.ToArray();
+            var result = memStream.ToArray();
             memStream.Close();
             cryptStream.Close();
             return result;

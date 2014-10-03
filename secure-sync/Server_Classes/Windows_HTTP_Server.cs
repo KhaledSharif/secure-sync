@@ -1,40 +1,37 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
-using System.Web.Http;
-using System.Threading;
-using System.Linq;
 using System.Text;
+using System.Threading;
 
-using SecureSync;
-
-namespace SecureSync
+namespace secure_sync.Server_Classes
 {
-    class Windows_HTTP_Server
+    class WindowsHttpServer
     {
-        private readonly HttpListener listener = new HttpListener();
-        private readonly Func<HttpListenerRequest, string> responderMethod;
+        private readonly HttpListener _listener = new HttpListener();
+        private readonly Func<HttpListenerRequest, string> _responderMethod;
 
-        public Windows_HTTP_Server
-            (string[] prefixes, Func<HttpListenerRequest, string> method)
+        public WindowsHttpServer
+            (ICollection<string> prefixes, Func<HttpListenerRequest, string> method)
         {
             if (!HttpListener.IsSupported) 
                 throw new NotSupportedException("Needs Windows XP SP2, Server 2003 or later.");
 
-            if (prefixes == null || prefixes.Length == 0) 
+            if (prefixes == null || prefixes.Count == 0) 
                 throw new ArgumentException("prefixes");
 
             if (method == null) 
                 throw new ArgumentException("method");
 
-            foreach (string s in prefixes) 
-                listener.Prefixes.Add(s);
+            foreach (var s in prefixes) 
+                _listener.Prefixes.Add(s);
 
-            responderMethod = method;
+            _responderMethod = method;
 
-            listener.Start();
+            _listener.Start();
         }
 
-        public Windows_HTTP_Server
+        public WindowsHttpServer
             (Func<HttpListenerRequest, string> method, params string[] prefixes)
             : this(prefixes, method)
         {
@@ -48,32 +45,32 @@ namespace SecureSync
                 Console.WriteLine("Webserver running.");
                 try
                 {
-                    while (listener.IsListening)
+                    while (_listener.IsListening)
                     {
                         ThreadPool.QueueUserWorkItem((c) =>
                         {
                             var ctx = c as HttpListenerContext;
                             try
                             {
-                                string rstr = responderMethod(ctx.Request);
-                                byte[] buf = Encoding.UTF8.GetBytes(rstr);
+                                var rstr = _responderMethod(ctx.Request);
+                                var buf = Encoding.UTF8.GetBytes(rstr);
                                 ctx.Response.ContentLength64 = buf.Length;
                                 ctx.Response.OutputStream.Write(buf, 0, buf.Length);
                             }
                             catch (Exception e)
                             {
-                                Throw_Exceptions.Throw_Exception_Error("Unknown error.", e);
+                                ThrowExceptions.ThrowExceptionError("Unknown error.", e);
                             }
                             finally
                             {
-                                ctx.Response.OutputStream.Close();
+                                if (ctx != null) ctx.Response.OutputStream.Close();
                             }
-                        }, listener.GetContext());
+                        }, _listener.GetContext());
                     }
                 }
                 catch (Exception e)
                 {
-                    Throw_Exceptions.Throw_Exception_Error("Unknown error.", e);
+                    ThrowExceptions.ThrowExceptionError("Unknown error.", e);
                 }
             });
             return true;
@@ -83,13 +80,13 @@ namespace SecureSync
         {
             try
             {
-                listener.Stop();
-                listener.Close();
+                _listener.Stop();
+                _listener.Close();
                 return true;
             }
             catch (Exception e)
             {
-                return Throw_Exceptions.Throw_Exception_Error("", e);
+                return ThrowExceptions.ThrowExceptionError("", e);
             }
         }
     }
